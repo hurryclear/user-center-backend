@@ -1,0 +1,24 @@
+spring:
+  application:
+    name: backend_app
+  # DataSource Config
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://localhost:3306/hurryclear
+    username: root
+    password: 12345678
+  session:
+    timeout: 86400 # time limitation of a session: a day = 86400 s
+server:
+  port: 8080
+  servlet:
+    context-path: /api
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: false # mybatis-plus will auto map underscore to camel
+  global-config:
+    db-config: # logic delete using "isDelete" column, why do we need this?
+      logic-delete-field: isDelete # logic delete global variable
+      logic-delete-value: 1 # logic delete: yes
+      logic-not-delete-value: 0 # logic delete: no

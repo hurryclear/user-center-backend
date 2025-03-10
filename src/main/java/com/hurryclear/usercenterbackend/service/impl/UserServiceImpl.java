@@ -5,13 +5,17 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.hurryclear.usercenterbackend.model.domain.User;
 import com.hurryclear.usercenterbackend.service.UserService;
 import com.hurryclear.usercenterbackend.mapper.UserMapper;
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.java.Log;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.util.DigestUtils;
 
 import javax.annotation.Resource;
+import java.sql.PreparedStatement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
 
 /**
 * @author hurjiang
@@ -19,11 +23,17 @@ import java.util.regex.Pattern;
 * @createDate 2025-03-10 14:58:01
 */
 @Service
+@Log
 public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService{
 
+    private static final String SALT = "hurryclear";
+    private static final String USER_LOGIN_STATE = "userLoginState";
+
     @Resource
     private UserMapper userMapper;
+
+
 
     @Override
     public long userRegister(String userAccount, String userPassword, String checkPassword) {
@@ -66,7 +76,6 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 //        }
 
         // 7. encrypt password --> md5
-        final String SALT = "hurryclear";
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
 
         // 8. save new user in database
@@ -79,6 +88,59 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         return user.getId();
+    }
+
+    @Override
+    public User doLogin(String userAccount, String userPassword, HttpServletRequest request) {
+
+        // 1. check userAccount, userPassword
+        // 1.1 not null
+        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
+            return null;
+        }
+        // 1.2 userAccount not shorter than 4
+        if (userAccount.length() < 4) {
+            return null;
+        }
+        // 1.3 userPassword not shorter than 8
+        if (userPassword.length() < 8) {
+            return null;
+        }
+        // 1.4 no special characters
+        String invalidPattern = "\\pP|\\pS|\\s+";
+        Matcher matcher = Pattern.compile(invalidPattern).matcher(userAccount);
+        if (matcher.find()) {
+            return null;
+        }
+
+        // 2. check password (password and encryptPassword in database)
+        // so this is to user MyBatis-plus (QueryWrapper) to interact with database
+        String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
+        QueryWrapper<User> queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("userAccount", userAccount);
+        queryWrapper.eq("userPassword", encryptPassword);
+        User user = userMapper.selectOne(queryWrapper);
+        if (user == null) {
+            log.info("Login fails, account doesn't match password");
+            return null;
+        }
+
+        // 3. hide sensitive information
+        User safetyUser = new User();
+        safetyUser.setId(user.getId());
+        safetyUser.setUsername(user.getUsername());
+        safetyUser.setUserAccount(user.getUserAccount());
+        safetyUser.setAvatarUrl(user.getAvatarUrl());
+        safetyUser.setGender(user.getGender());
+        safetyUser.setPhone(user.getPhone());
+        safetyUser.setEmail(user.getEmail());
+        safetyUser.setUserStatus(user.getUserStatus());
+        safetyUser.setCreateTime(user.getCreateTime());
+
+        // 4. save session (user states)
+        request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
+
+        return safetyUser;
     }
 }
 

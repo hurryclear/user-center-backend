@@ -2,6 +2,7 @@ package com.hurryclear.usercenterbackend.service;
 
 import com.hurryclear.usercenterbackend.model.domain.User;
 import com.baomidou.mybatisplus.extension.service.IService;
+import jakarta.servlet.http.HttpServletRequest;
 
 /**
 * @author hurjiang
@@ -10,5 +11,19 @@ import com.baomidou.mybatisplus.extension.service.IService;
 */
 public interface UserService extends IService<User> {
 
+    /**
+     * @param userAccount
+     * @param userPassword
+     * @param checkPassword
+     * @return
+     */
     long userRegister(String userAccount, String userPassword, String checkPassword);
+
+    /**
+     * @param userAccount
+     * @param userPassword
+     * @param request
+     * @return User user
+     */
+    User doLogin(String userAccount, String userPassword, HttpServletRequest request);
 }

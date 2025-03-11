@@ -25,5 +25,12 @@ public interface UserService extends IService<User> {
      * @param request
      * @return User user
      */
-    User doLogin(String userAccount, String userPassword, HttpServletRequest request);
+    User userLogin(String userAccount, String userPassword, HttpServletRequest request);
+
+
+    /**
+     * @param user
+     * @return safetyUser
+     */
+    User getSafetyUser(User user);
 }

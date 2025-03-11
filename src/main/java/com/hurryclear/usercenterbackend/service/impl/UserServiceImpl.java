@@ -16,6 +16,8 @@ import java.sql.PreparedStatement;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.hurryclear.usercenterbackend.constant.UserConstant.USER_LOGIN_STATE;
+
 
 /**
 * @author hurjiang
@@ -28,7 +30,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     implements UserService{
 
     private static final String SALT = "hurryclear";
-    private static final String USER_LOGIN_STATE = "userLoginState";
+
 
     @Resource
     private UserMapper userMapper;
@@ -91,7 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     }
 
     @Override
-    public User doLogin(String userAccount, String userPassword, HttpServletRequest request) {
+    public User userLogin(String userAccount, String userPassword, HttpServletRequest request) {
 
         // 1. check userAccount, userPassword
         // 1.1 not null
@@ -126,19 +128,29 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
 
         // 3. hide sensitive information
-        User safetyUser = new User();
-        safetyUser.setId(user.getId());
-        safetyUser.setUsername(user.getUsername());
-        safetyUser.setUserAccount(user.getUserAccount());
-        safetyUser.setAvatarUrl(user.getAvatarUrl());
-        safetyUser.setGender(user.getGender());
-        safetyUser.setPhone(user.getPhone());
-        safetyUser.setEmail(user.getEmail());
-        safetyUser.setUserStatus(user.getUserStatus());
-        safetyUser.setCreateTime(user.getCreateTime());
+        User safetyUser = getSafetyUser(user);
 
         // 4. save session (user states)
         request.getSession().setAttribute(USER_LOGIN_STATE, safetyUser);
+
+        return safetyUser;
+    }
+
+    @Override
+    public User getSafetyUser(User originalUser) {
+
+        User safetyUser = new User();
+
+        safetyUser.setId(originalUser.getId());
+        safetyUser.setUsername(originalUser.getUsername());
+        safetyUser.setUserAccount(originalUser.getUserAccount());
+        safetyUser.setAvatarUrl(originalUser.getAvatarUrl());
+        safetyUser.setGender(originalUser.getGender());
+        safetyUser.setPhone(originalUser.getPhone());
+        safetyUser.setEmail(originalUser.getEmail());
+        safetyUser.setUserRole(originalUser.getUserRole());
+        safetyUser.setUserStatus(originalUser.getUserStatus());
+        safetyUser.setCreateTime(originalUser.getCreateTime());
 
         return safetyUser;
     }

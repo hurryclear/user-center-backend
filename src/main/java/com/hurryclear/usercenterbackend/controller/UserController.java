@@ -7,10 +7,7 @@ import com.hurryclear.usercenterbackend.model.domain.UserRegisterRequest;
 import com.hurryclear.usercenterbackend.service.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.ArrayList;
@@ -88,6 +85,23 @@ public class UserController {
             return false;
         }
         return userService.removeById(id);
+    }
+
+    // To get Login-State (for server to remember user)
+    @GetMapping("/current")
+    public User getCurrentUser(HttpServletRequest request) {
+       
+       Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+       User currentUser = (User) userObj;
+       if (currentUser == null) {
+           return null;
+       }
+       // what's the reason to do the following steps? We've had the currentUser, but you did get id of the current user and then get user with the id
+        // is not the same user then?
+       long userId = currentUser.getId();
+       // TODO: is user valid?
+       User user = userService.getById(userId);
+       return userService.getSafetyUser(user);
     }
 
     // check admin role

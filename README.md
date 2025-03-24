@@ -161,4 +161,74 @@ This is Backend App for user center.
 - search and delete
   - `@PostMapping("/search")` and `@PostMapping("/delete")`
   - using methods in `userService`, there are methods which are implemented from `IRepository` (MyBatis-plus)
+
+## get current user (登录态？)
+
+https://blog.csdn.net/LAM1006_csdn/article/details/120440394
+
+https://www.cnblogs.com/88223100/p/One-article-to-understand-the-common-login-schemes-of-the-front-and-rear-end.html
+
+### Login state/authentication state/登录态
+
+- the system will remember you after your login
+
+### Session-based login state
+
+<img src="README.assets/image-20250324205800776.png" alt="image-20250324205800776" style="zoom:80%;" />
+
+- session: server create and manage
+- cookie: client (browser) manage and store
+- Steps:
+  - After logging in, the server saves user information in a **session**.
+  - A session ID is sent to the client as a **cookie**.
+  - When the client sends the session ID with each request, the server knows which user is logged in.
+- Cons: server needs storage for session
+
+### Token-based login state
+
+<img src="README.assets/image-20250324210219733.png" alt="image-20250324210219733" style="zoom:80%;" />
+
+- Traditional token
+  - The server generates a **token** (JWT) after login and sends it to the client.
+  - The client must include this token in the Authorization header for future requests.
+  - server validates the token without storing session data (stateless).
+  - <img src="README.assets/image-20250324210730128.png" alt="image-20250324210730128" style="zoom:80%;" />
+  - everytime has to query databse to know the validity of the token --> consums the performance
+- JWT
+  - Json Web Token
+  - 3 parts
+    - header
+    - payload
+    - signature
+    - <img src="README.assets/image-20250324220407110.png" alt="image-20250324220407110" style="zoom:80%;" />
+  - 
+
+# Communication between Backend and Frontend
+
+
+
+## Proxy
+
+- forward proxy and reverse proxy
+
+- Nginx server or Node.js server
+
+- Ant Design Pro has `proxy.ts` for us to set proxy (forward proxy)
+
+  ```typescript
+  // localhost:8000/api/** -> https://preview.pro.ant.design/api/**
+      '/api': {
+        // 要代理的地址
+        target: 'http://localhost:8080/',
+        // 配置了这个可以从 http 代理到 https
+        // 依赖 origin 的功能可能需要这个，比如 cookie
+        changeOrigin: true,
+      },
+  ```
+
+- 
+
+# Frontend
+
+- using Ant Design Pro as the framework and adjust the code accordingly
 - 

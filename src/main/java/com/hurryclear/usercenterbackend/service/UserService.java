@@ -27,10 +27,12 @@ public interface UserService extends IService<User> {
      */
     User userLogin(String userAccount, String userPassword, HttpServletRequest request);
 
+    int userLogout(HttpServletRequest request);
 
     /**
      * @param user
      * @return safetyUser
      */
     User getSafetyUser(User user);
+
 }

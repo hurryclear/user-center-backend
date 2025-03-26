@@ -57,8 +57,21 @@ public class UserController {
        return userService.userLogin(userAccount, userPassword, request);
     }
 
+    /**
+     * User Logout
+     * @param request
+     * @return
+     */
+    @PostMapping("/logout")
+    public Integer userLogout(HttpServletRequest request) {
+       if (request == null) {
+           return null;
+       }
+       return userService.userLogout(request);
+    };
+
     // Search
-    @PostMapping("/search")
+    @GetMapping("/search")
     public List<User> searchUsers(String username, HttpServletRequest request) {
        // check role, only admin can search user
         if (!isAdmin(request)) {

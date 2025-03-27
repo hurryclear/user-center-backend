@@ -29,9 +29,26 @@ This is Backend App for user center.
 
 # Database
 
-<img src="README.assets/image-20250310142607092.png" alt="image-20250310142607092" style="zoom:80%;" />
-
-<img src="README.assets/image-20250310145401720.png" alt="image-20250310145401720" style="zoom:80%;" />
+```sql
+-- auto-generated definition
+create table user
+(
+    id           bigint auto_increment
+        primary key,
+    username     varchar(256)      null,
+    userAccount  varchar(256)      null,
+    avatarUrl    varchar(1024)     null,
+    gender       tinyint           null,
+    userPassword varchar(512)      not null,
+    phone        varchar(128)      null,
+    email        varchar(512)      null,
+    userStatus   int     default 0 not null,
+    createTime   datetime          null,
+    updateTime   datetime          null,
+    isDelete     tinyint default 0 not null,
+    userRole     int     default 0 null
+);
+```
 
 - isDelete: logic delete, in the real-world company normally don't really delete user data, but just set to 0
 
@@ -65,12 +82,12 @@ This is Backend App for user center.
 
 ## Registration
 
-1. user register from frontend with userAccount, userPassword, checkPassword
-2. check userAccount, userPassword, checkPassword
+1. user register from frontend with userAccount, userPassword, checkPassword, planetCode
+2. check userAccount, userPassword, checkPassword, planetCode
    1. not null
    2. account not shorter than 4 digits
    3. password not shorter than 8 digits
-   4. unique account
+   4. unique account, planet code
    5. no special character in account
    6. userPassword and checkPassword are same
 3. encrypt password!!!
@@ -248,6 +265,33 @@ public User getCurrentUser(HttpServletRequest request) {
   ```
 
 - 
+
+# Backend Optimization
+
+## 通用返回对象
+
+- http also has state code, but that's not accurate enough
+- we can define our own state code which returns to frontend, so frontend can know the state in details
+
+```json
+{
+  "name":
+}
+  
+{
+  "code": 00 // state code
+  "data": {
+	  "name": 
+	},
+	"message": "ok"
+}
+```
+
+## 封装全局异常处理
+
+<img src="README.assets/image-20250327145843109.png" alt="image-20250327145843109" style="zoom:67%;" />
+
+## 全局请求日志和登录校验
 
 # Frontend
 

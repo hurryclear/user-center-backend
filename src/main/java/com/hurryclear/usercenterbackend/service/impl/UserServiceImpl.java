@@ -2,6 +2,8 @@ package com.hurryclear.usercenterbackend.service.impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.hurryclear.usercenterbackend.common.ErrorCode;
+import com.hurryclear.usercenterbackend.exception.BusinessException;
 import com.hurryclear.usercenterbackend.model.domain.User;
 import com.hurryclear.usercenterbackend.service.UserService;
 import com.hurryclear.usercenterbackend.mapper.UserMapper;
@@ -41,20 +43,20 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
     public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1. check not null --> using StringUtils.isAnyBlank from Apache Commons Lang
         if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "parameter is null");
         }
 
         // 2. check userAccount not shorter than 4 digits
         if (userAccount.length() < 4 ) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "user account too short");
         }
         // 3. check userPassword not shorter than 8 digits
         if (userPassword.length() < 8) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "user password too short");
         }
 
         if (planetCode.length() > 5) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "planet code too long");
         }
 
         // 5. no special character in userAccount
@@ -75,7 +77,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("userAccount", userAccount);
         long count = userMapper.selectCount(queryWrapper);
         if(count > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "account exit!");
         }
 
         // planet code must be unique
@@ -83,7 +85,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         queryWrapper.eq("planetCode", planetCode);
         count = userMapper.selectCount(queryWrapper);
         if (count > 0) {
-            return -1;
+            throw new BusinessException(ErrorCode.PARAMS_ERROR, "planet code exit!");
         }
 
         // 7. encrypt password --> md5

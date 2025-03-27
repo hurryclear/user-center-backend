@@ -1,6 +1,10 @@
 package com.hurryclear.usercenterbackend.controller;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.hurryclear.usercenterbackend.common.BaseResponse;
+import com.hurryclear.usercenterbackend.common.ErrorCode;
+import com.hurryclear.usercenterbackend.common.ResultUtils;
+import com.hurryclear.usercenterbackend.exception.BusinessException;
 import com.hurryclear.usercenterbackend.model.domain.User;
 import com.hurryclear.usercenterbackend.model.domain.UserLoginRequest;
 import com.hurryclear.usercenterbackend.model.domain.UserRegisterRequest;
@@ -27,9 +31,9 @@ public class UserController {
 
     // Register API
    @PostMapping("/register")
-   public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
+   public BaseResponse<Long > userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
        if (userRegisterRequest == null) {
-           return null;
+           throw new BusinessException(ErrorCode.PARAMS_ERROR);
        }
        String userAccount = userRegisterRequest.getUserAccount();
        String userPassword = userRegisterRequest.getUserPassword();
@@ -42,21 +46,23 @@ public class UserController {
        if (!userPassword.equals(checkPassword)) {
            return null;
        }
-       return userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
+       long result = userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
+       return ResultUtils.success(result);
     }
 
     // Login API
     @PostMapping("/login")
-    public User userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
+    public BaseResponse<User > userLogin(@RequestBody UserLoginRequest userLoginRequest, HttpServletRequest request) {
        if (userLoginRequest == null) {
-           return null;
+           throw new BusinessException(ErrorCode.PARAMS_ERROR);
        }
        String userPassword = userLoginRequest.getUserPassword();
        String userAccount = userLoginRequest.getUserAccount();
        if (StringUtils.isAnyBlank(userAccount, userPassword)) {
-           return null;
+           throw new BusinessException(ErrorCode.PARAMS_ERROR);
        }
-       return userService.userLogin(userAccount, userPassword, request);
+       User user = userService.userLogin(userAccount, userPassword, request);
+       return ResultUtils.success(user);
     }
 
     /**
@@ -65,19 +71,20 @@ public class UserController {
      * @return
      */
     @PostMapping("/logout")
-    public Integer userLogout(HttpServletRequest request) {
+    public BaseResponse<Integer > userLogout(HttpServletRequest request) {
        if (request == null) {
-           return null;
+           throw new BusinessException(ErrorCode.PARAMS_ERROR);
        }
-       return userService.userLogout(request);
+       int result = userService.userLogout(request);
+       return ResultUtils.success(result);
     };
 
     // Search
     @GetMapping("/search")
-    public List<User> searchUsers(String username, HttpServletRequest request) {
+    public BaseResponse<List<User>> searchUsers(String username, HttpServletRequest request) {
        // check role, only admin can search user
         if (!isAdmin(request)) {
-            return new ArrayList<>();
+            throw new BusinessException(ErrorCode.NO_AUTH, "Not admin");
         }
 
         QueryWrapper<User> queryWrapper = new QueryWrapper<>();
@@ -90,33 +97,39 @@ public class UserController {
         // don't understand this code #todo
         // remove sensitive information
         List<User> userList = userService.list(queryWrapper);
-        return userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        List<User> list = userList.stream().map(user -> userService.getSafetyUser(user)).collect(Collectors.toList());
+        return ResultUtils.success(list);
     }
     // Delete
     @PostMapping("/delete")
-    public boolean deleteUser(@RequestBody long id, HttpServletRequest request) { // why @RequestBody for id? #todo
+    public BaseResponse<Boolean> deleteUser(@RequestBody long id, HttpServletRequest request) { // why @RequestBody for id? #todo
        // check admin
         if (!isAdmin(request) || id < 0) {
-            return false;
+            throw new BusinessException(ErrorCode.NO_AUTH);
         }
-        return userService.removeById(id);
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        boolean b = userService.removeById(id);
+        return ResultUtils.success(b);
     }
 
     // To get Login-State (for server to remember user)
     @GetMapping("/current")
-    public User getCurrentUser(HttpServletRequest request) {
+    public BaseResponse<User> getCurrentUser(HttpServletRequest request) {
        
        Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
        User currentUser = (User) userObj;
        if (currentUser == null) {
-           return null;
+           throw new BusinessException(ErrorCode.NOT_LOGIN);
        }
        // what's the reason to do the following steps? We've had the currentUser, but you did get id of the current user and then get user with the id
         // is not the same user then?
        long userId = currentUser.getId();
        // TODO: is user valid?
        User user = userService.getById(userId);
-       return userService.getSafetyUser(user);
+       User safetyUser = userService.getSafetyUser(user);
+       return ResultUtils.success(safetyUser);
     }
 
     // check admin role

@@ -24,8 +24,8 @@ public class UserController {
     @Resource
     private UserService userService; // UserService is an interface, why can you use interface instead of class of
     // interface
-    // Register API
 
+    // Register API
    @PostMapping("/register")
    public Long userRegister(@RequestBody UserRegisterRequest userRegisterRequest) {
        if (userRegisterRequest == null) {
@@ -34,13 +34,15 @@ public class UserController {
        String userAccount = userRegisterRequest.getUserAccount();
        String userPassword = userRegisterRequest.getUserPassword();
        String checkPassword = userRegisterRequest.getCheckPassword();
-       if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+       String planetCode = userRegisterRequest.getPlanetCode();
+
+       if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
            return null;
        }
        if (!userPassword.equals(checkPassword)) {
            return null;
        }
-       return userService.userRegister(userAccount, userPassword, checkPassword);
+       return userService.userRegister(userAccount, userPassword, checkPassword, planetCode);
     }
 
     // Login API

@@ -162,7 +162,7 @@ This is Backend App for user center.
   - `@PostMapping("/search")` and `@PostMapping("/delete")`
   - using methods in `userService`, there are methods which are implemented from `IRepository` (MyBatis-plus)
 
-## get current user (登录态？)
+## Login-state
 
 https://blog.csdn.net/LAM1006_csdn/article/details/120440394
 
@@ -170,7 +170,7 @@ https://www.cnblogs.com/88223100/p/One-article-to-understand-the-common-login-sc
 
 ### Login state/authentication state/登录态
 
-- the system will remember you after your login
+- the system will remember you after your login, so that the users don't can switch between different pages
 
 ### Session-based login state
 
@@ -203,6 +203,27 @@ https://www.cnblogs.com/88223100/p/One-article-to-understand-the-common-login-sc
     - <img src="README.assets/image-20250324220407110.png" alt="image-20250324220407110" style="zoom:80%;" />
   - 
 
+## get current user
+
+```java
+@GetMapping("/current")
+public User getCurrentUser(HttpServletRequest request) {
+  Object userObj = request.getSession().getAttribute(USER_LOGIN_STATE);
+  User currentUser = (User) userObj;
+  if (currentUser == null) {
+    return null;
+  }
+  long userId = currentUser.getId();
+  User user = userService.getById(userId);
+  return userService.getSafetyUser(user);
+}
+```
+
+## Logout
+
+- Backend: remove user attribute which saved in session when user login
+- Frontend: 
+
 # Communication between Backend and Frontend
 
 
@@ -232,3 +253,11 @@ https://www.cnblogs.com/88223100/p/One-article-to-understand-the-common-login-sc
 
 - using Ant Design Pro as the framework and adjust the code accordingly
 - 
+
+## ProComponents
+
+### Pro Table
+
+- https://procomponents.ant.design/en-US/components/table?tab=api&current=1&pageSize=5
+- Find the component you need, copy the src code and add into your code
+

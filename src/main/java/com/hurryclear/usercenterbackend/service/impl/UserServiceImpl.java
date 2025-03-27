@@ -38,9 +38,9 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
 
 
     @Override
-    public long userRegister(String userAccount, String userPassword, String checkPassword) {
+    public long userRegister(String userAccount, String userPassword, String checkPassword, String planetCode) {
         // 1. check not null --> using StringUtils.isAnyBlank from Apache Commons Lang
-        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword)) {
+        if (StringUtils.isAnyBlank(userAccount, userPassword, checkPassword, planetCode)) {
             return -1;
         }
 
@@ -50,6 +50,10 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         }
         // 3. check userPassword not shorter than 8 digits
         if (userPassword.length() < 8) {
+            return -1;
+        }
+
+        if (planetCode.length() > 5) {
             return -1;
         }
 
@@ -73,9 +77,14 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         if(count > 0) {
             return -1;
         }
-//        if (userRepository.existsByUserAccount(userAccount)) {
-//            return -1;
-//        }
+
+        // planet code must be unique
+        queryWrapper = new QueryWrapper<>();
+        queryWrapper.eq("planetCode", planetCode);
+        count = userMapper.selectCount(queryWrapper);
+        if (count > 0) {
+            return -1;
+        }
 
         // 7. encrypt password --> md5
         String encryptPassword = DigestUtils.md5DigestAsHex((SALT + userPassword).getBytes());
@@ -84,6 +93,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         User user = new User();
         user.setUserAccount(userAccount);
         user.setUserPassword(encryptPassword);
+        user.setPlanetCode(planetCode);
         boolean saveResult = this.save(user);
         if (! saveResult) {
             return -1;
@@ -136,6 +146,12 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         return safetyUser;
     }
 
+    /**
+     * User Logout Logic
+     * remove attribute of session
+     * @param request
+     * @return
+     */
     @Override
     public int userLogout(HttpServletRequest request) {
         request.getSession().removeAttribute(USER_LOGIN_STATE);
@@ -158,6 +174,7 @@ public class UserServiceImpl extends ServiceImpl<UserMapper, User>
         safetyUser.setPhone(originalUser.getPhone());
         safetyUser.setEmail(originalUser.getEmail());
         safetyUser.setUserRole(originalUser.getUserRole());
+        safetyUser.setPlanetCode(originalUser.getPlanetCode());
         safetyUser.setUserStatus(originalUser.getUserStatus());
         safetyUser.setCreateTime(originalUser.getCreateTime());
 

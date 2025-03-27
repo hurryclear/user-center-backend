@@ -69,6 +69,11 @@ public class User {
     private Date updateTime;
 
     /**
+     * planet code 星球编号
+     */
+    private String planetCode;
+
+    /**
      * 
      */
     @TableLogic

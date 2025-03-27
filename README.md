@@ -293,6 +293,10 @@ public User getCurrentUser(HttpServletRequest request) {
 
 ## 全局请求日志和登录校验
 
+# Frontend Optimization
+
+<img src="README.assets/image-20250327163201426.png" alt="image-20250327163201426" style="zoom:67%;" />
+
 # Frontend
 
 - using Ant Design Pro as the framework and adjust the code accordingly

@@ -1,16 +1,12 @@
 package com.hurryclear.usercenterbackend.service;
-import java.util.Date;
 
 import com.hurryclear.usercenterbackend.model.domain.User;
-import jdk.nashorn.internal.runtime.UserAccessorProperty;
-import org.apache.ibatis.cache.CacheKey;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.boot.test.context.SpringBootTest;
 
 import javax.annotation.Resource;
 
-import static org.junit.jupiter.api.Assertions.*;
 
 @SpringBootTest
 public class UserServiceTest {
